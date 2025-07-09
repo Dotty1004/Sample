@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>화학기호 퀴즈 게임</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .info-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .info-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .question-container {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .element-name {
+            font-size: 2.2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #FFE4B5;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .atomic-number {
+            font-size: 1.2em;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+
+        .input-container {
+            margin: 20px 0;
+        }
+
+        #symbolInput {
+            font-size: 1.8em;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            width: 150px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ffa500);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            color: white;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.start-btn {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            font-size: 1.3em;
+            padding: 20px 40px;
+        }
+
+        .btn.next-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+
+        .feedback {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin: 15px 0;
+            min-height: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .feedback.correct {
+            color: #00ff88;
+            text-shadow: 0 0 10px #00ff88;
+        }
+
+        .feedback.incorrect {
+            color: #ff4757;
+            text-shadow: 0 0 10px #ff4757;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #4ecdc4);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .game-over {
+            display: none;
+        }
+
+        .final-score {
+            font-size: 3em;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin: 20px 0;
+        }
+
+        .timer {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        .timer.warning {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #FFD700;
+            animation: fall 3s linear infinite;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .start-screen {
+            text-align: center;
+        }
+
+        .game-screen {
+            display: none;
+        }
+
+        .description {
+            font-size: 1.1em;
+            margin: 20px 0;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="start-screen" id="startScreen">
+            <h1>🧪 화학기호 퀴즈 게임</h1>
+            <div class="description">
+                원소 1번부터 20번까지의 화학기호를 맞춰보세요!<br>
+                각 문제마다 15초의 시간이 주어집니다.<br>
+                정답을 맞출 때마다 점수를 획득하세요!
+            </div>
+            <button class="btn start-btn" onclick="startGame()">게임 시작! 🚀</button>
+        </div>
+
+        <div class="game-screen" id="gameScreen">
+            <h1>🧪 화학기호 퀴즈</h1>
+            
+            <div class="game-info">
+                <div class="info-item">
+                    <span class="info-label">점수</span>
+                    <span class="info-value" id="score">0</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">문제</span>
+                    <span class="info-value"><span id="currentQ">1</span>/20</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">시간</span>
+                    <span class="info-value timer" id="timer">15</span>
+                </div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div class="question-container">
+                <div class="atomic-number">원소 번호: <span id="atomicNumber">1</span></div>
+                <div class="element-name" id="elementName">수소</div>
+                <div class="input-container">
+                    <input type="text" id="symbolInput" placeholder="?" maxlength="2" autocomplete="off">
+                </div>
+                <button class="btn" onclick="checkAnswer()">정답 확인! ✨</button>
+                <div class="feedback" id="feedback"></div>
+            </div>
+
+            <button class="btn next-btn" id="nextBtn" onclick="nextQuestion()" style="display: none;">다음 문제 ➡️</button>
+        </div>
+
+        <div class="game-over" id="gameOver">
+            <h1>🎉 게임 완료!</h1>
+            <div class="final-score" id="finalScore">0</div>
+            <div id="scoreMessage"></div>
+            <button class="btn start-btn" onclick="restartGame()">다시 도전! 🔄</button>
+        </div>
+    </div>
+
+    <div class="celebration" id="celebration"></div>
+
+    <script>
+        const elements = [
+            { number: 1, name: "수소", symbol: "H" },
+            { number: 2, name: "헬륨", symbol: "He" },
+            { number: 3, name: "리튬", symbol: "Li" },
+            { number: 4, name: "베릴륨", symbol: "Be" },
+            { number: 5, name: "붕소", symbol: "B" },
+            { number: 6, name: "탄소", symbol: "C" },
+            { number: 7, name: "질소", symbol: "N" },
+            { number: 8, name: "산소", symbol: "O" },
+            { number: 9, name: "플루오르", symbol: "F" },
+            { number: 10, name: "네온", symbol: "Ne" },
+            { number: 11, name: "나트륨", symbol: "Na" },
+            { number: 12, name: "마그네슘", symbol: "Mg" },
+            { number: 13, name: "알루미늄", symbol: "Al" },
+            { number: 14, name: "규소", symbol: "Si" },
+            { number: 15, name: "인", symbol: "P" },
+            { number: 16, name: "황", symbol: "S" },
+            { number: 17, name: "염소", symbol: "Cl" },
+            { number: 18, name: "아르곤", symbol: "Ar" },
+            { number: 19, name: "칼륨", symbol: "K" },
+            { number: 20, name: "칼슘", symbol: "Ca" }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let timer;
+        let timeLeft = 15;
+        let gameQuestions = [];
+        let answered = false;
+
+        function startGame() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            document.getElementById('gameOver').style.display = 'none';
+            
+            // 문제 순서를 랜덤으로 섞기
+            gameQuestions = [...elements].sort(() => Math.random() - 0.5);
+            currentQuestion = 0;
+            score = 0;
+            
+            updateDisplay();
+            showQuestion();
+            startTimer();
+        }
+
+        function showQuestion() {
+            const element = gameQuestions[currentQuestion];
+            document.getElementById('atomicNumber').textContent = element.number;
+            document.getElementById('elementName').textContent = element.name;
+            document.getElementById('symbolInput').value = '';
+            document.getElementById('symbolInput').focus();
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('nextBtn').style.display = 'none';
+            answered = false;
+            timeLeft = 15;
+            updateTimer();
+        }
+
+        function startTimer() {
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimer();
+                
+                if (timeLeft <= 5) {
+                    document.getElementById('timer').classList.add('warning');
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    if (!answered) {
+                        checkAnswer(true);
+                    }
+                }
+            }, 1000);
+        }
+
+        function updateTimer() {
+            document.getElementById('timer').textContent = timeLeft;
+            if (timeLeft > 5) {
+                document.getElementById('timer').classList.remove('warning');
+            }
+        }
+
+        function checkAnswer(timeUp = false) {
+            if (answered) return;
+            
+            answered = true;
+            clearInterval(timer);
+            
+            const userAnswer = document.getElementById('symbolInput').value.trim().toLowerCase();
+            const correctAnswer = gameQuestions[currentQuestion].symbol.toLowerCase();
+            const feedback = document.getElementById('feedback');
+            
+            if (timeUp) {
+                feedback.textContent = `⏰ 시간 초과! 정답: ${gameQuestions[currentQuestion].symbol}`;
+                feedback.className = 'feedback incorrect';
+            } else if (userAnswer === correctAnswer) {
+                score += 100;
+                feedback.textContent = '🎉 정답입니다!';
+                feedback.className = 'feedback correct';
+                createConfetti();
+            } else {
+                feedback.textContent = `❌ 틀렸습니다! 정답: ${gameQuestions[currentQuestion].symbol}`;
+                feedback.className = 'feedback incorrect';
+            }
+            
+            updateDisplay();
+            
+            if (currentQuestion < gameQuestions.length - 1) {
+                document.getElementById('nextBtn').style.display = 'inline-block';
+            } else {
+                setTimeout(endGame, 2000);
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            showQuestion();
+            startTimer();
+        }
+
+        function updateDisplay() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('currentQ').textContent = currentQuestion + 1;
+            
+            const progress = ((currentQuestion + 1) / gameQuestions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function endGame() {
+            clearInterval(timer);
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('gameOver').style.display = 'block';
+            document.getElementById('finalScore').textContent = score + '점';
+            
+            let message = '';
+            const percentage = (score / 2000) * 100;
+            
+            if (percentage >= 90) {
+                message = '🏆 완벽해요! 화학 천재시네요!';
+            } else if (percentage >= 70) {
+                message = '🎉 훌륭해요! 거의 다 맞추셨네요!';
+            } else if (percentage >= 50) {
+                message = '👍 좋아요! 조금만 더 연습하면 완벽할 거예요!';
+            } else {
+                message = '💪 다시 도전해보세요! 연습하면 늘어날 거예요!';
+            }
+            
+            document.getElementById('scoreMessage').textContent = message;
+        }
+
+        function restartGame() {
+            startGame();
+        }
+
+        function createConfetti() {
+            const celebration = document.getElementById('celebration');
+            const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57'];
+            
+            for (let i = 0; i < 30; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 3 + 's';
+                celebration.appendChild(confetti);
+                
+                setTimeout(() => {
+                    confetti.remove();
+                }, 3000);
+            }
+        }
+
+        // 엔터키로 정답 확인
+        document.getElementById('symbolInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !answered) {
+                checkAnswer();
+            }
+        });
+
+        // 입력값 자동 대문자 변환
+        document.getElementById('symbolInput').addEventListener('input', function(e) {
+            e.target.value = e.target.value.toUpperCase();
+        });
+    </script>
+</body>
+</html>
